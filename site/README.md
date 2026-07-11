@@ -3,6 +3,12 @@
 The complete HTML for [terna.studio](https://www.terna.studio): a St Andrews graduate studio selling
 fixed-price, guaranteed automation outcomes to local SMEs, with a hiring pipeline attached.
 
+> **Platform note:** the MVP is being built on **Base44** — the build source is
+> [`mvp/base44-prompt.md`](../mvp/base44-prompt.md), with the validation playbook and launch
+> checklist alongside it in [`mvp/`](../mvp/). The HTML pages here remain the design
+> reference (pixel truth). The Wix-import instructions below are kept for history; any Terna
+> sites in the Wix account are deprecated leftovers.
+
 Brand system: cream ground (`#EFEDE3`), near-black ink (`#14130F`), no colour, monospace masthead
 typography, the `[T]` bracket mark, tagline **CURATED · VETTED · LOCAL**.
 
