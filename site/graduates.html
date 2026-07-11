@@ -44,6 +44,27 @@
   }
   .rule { border: 0; height: 1px; background: var(--line); }
 
+  /* header / footer */
+  header.site { padding: 1.3rem 0; border-bottom: 1px solid var(--line); }
+  header.site .wrap { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .brand { display: flex; align-items: center; gap: 0.7rem; text-decoration: none; color: var(--ink); }
+  .brand .word { font-family: var(--mono); font-weight: 700; font-size: 1.25rem; letter-spacing: 0.32em; }
+  nav.top { display: flex; gap: 1.6rem; align-items: center; flex-wrap: wrap; }
+  nav.top a.nav-link {
+    text-decoration: none; font-family: var(--mono); font-size: 0.82rem;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink);
+  }
+  nav.top a.nav-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+  nav.top .btn { padding: 0.55rem 1.1rem; font-size: 0.8rem; }
+  @media (max-width: 60rem) { nav.top .nav-link { display: none; } }
+  footer.site {
+    border-top: 1px solid var(--line); padding: 2.4rem 0 3.2rem;
+    font-size: 0.88rem; color: var(--grey);
+  }
+  footer.site .wrap { display: flex; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; align-items: center; }
+  footer.site .word { font-family: var(--mono); font-weight: 700; letter-spacing: 0.28em; color: var(--ink); }
+  footer.site .tag { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.28em; text-transform: uppercase; }
+
   .btn {
     display: inline-block; font-family: var(--mono); font-weight: 700;
     font-size: 0.92rem; letter-spacing: 0.06em; text-decoration: none;
@@ -131,6 +152,27 @@
 </head>
 <body>
 
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="Terna — home">
+      <svg width="30" height="30" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <path d="M12 6 H6 V34 H12" stroke="#14130F" stroke-width="4" fill="none"/>
+        <path d="M28 6 H34 V34 H28" stroke="#14130F" stroke-width="4" fill="none"/>
+        <path d="M13 14 H27 M20 14 V28" stroke="#14130F" stroke-width="4" fill="none"/>
+      </svg>
+      <span class="word">TERNA</span>
+    </a>
+    <nav class="top" aria-label="Main">
+      <a class="nav-link" href="index.html">For businesses</a>
+      <a class="nav-link" href="#work">The work</a>
+      <a class="nav-link" href="#terms">Pay &amp; vetting</a>
+      <a target="_top" class="btn btn-solid" href="https://www.terna.studio/apply">Apply</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
 <!-- ===SPLIT:01-hero=== -->
 <section class="hero">
   <div class="wrap">
@@ -175,7 +217,7 @@
   </div>
 </section>
 <!-- ===SPLIT:03-work=== -->
-<section class="on-card">
+<section class="on-card" id="work">
   <div class="wrap">
     <div class="section-head">
       <div class="marker"><span class="pill">02</span><span class="label">The work</span></div>
@@ -254,7 +296,7 @@
   </div>
 </section>
 <!-- ===SPLIT:05-terms=== -->
-<section class="on-card">
+<section class="on-card" id="terms">
   <div class="wrap">
     <div class="marker"><span class="pill">04</span><span class="label">Pay &amp; vetting</span></div>
     <div class="cols">
@@ -308,6 +350,23 @@
   </div>
 </section>
 <!-- ===SPLIT:END=== -->
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="Terna — home">
+      <svg width="22" height="22" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <path d="M12 6 H6 V34 H12" stroke="#14130F" stroke-width="4" fill="none"/>
+        <path d="M28 6 H34 V34 H28" stroke="#14130F" stroke-width="4" fill="none"/>
+        <path d="M13 14 H27 M20 14 V28" stroke="#14130F" stroke-width="4" fill="none"/>
+      </svg>
+      <span class="word">TERNA</span>
+    </a>
+    <p class="tag">Paid · Trained · Placed</p>
+    <p><a href="index.html">For businesses</a> · <a target="_top" href="https://www.terna.studio/contact">hello@terna.studio</a> · © 2026 Terna</p>
+  </div>
+</footer>
 
 </body>
 </html>
