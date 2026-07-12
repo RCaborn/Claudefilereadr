@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TERNA — Studio Portal</title>
+<meta name="description" content="Terna Studio Portal — where St Andrews graduates browse briefs, deliver projects under studio supervision, and build a verified portfolio.">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="./css/portal.css">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="#/" aria-label="Terna Studio Portal — home">
+      <svg width="30" height="30" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <path d="M12 6 H6 V34 H12" stroke="#14130F" stroke-width="4" fill="none"/>
+        <path d="M28 6 H34 V34 H28" stroke="#14130F" stroke-width="4" fill="none"/>
+        <path d="M13 14 H27 M20 14 V28" stroke="#14130F" stroke-width="4" fill="none"/>
+      </svg>
+      <span class="word">TERNA</span>
+      <span class="submark">Studio Portal</span>
+    </a>
+    <nav class="top" id="nav" aria-label="Portal"><!-- rendered per role by app.js --></nav>
+  </div>
+</header>
+
+<main id="app"><!-- views mount here --></main>
+
+<footer class="site">
+  <div class="wrap">
+    <a class="brand" href="#/" aria-label="Terna — home">
+      <svg width="22" height="22" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <path d="M12 6 H6 V34 H12" stroke="#14130F" stroke-width="4" fill="none"/>
+        <path d="M28 6 H34 V34 H28" stroke="#14130F" stroke-width="4" fill="none"/>
+        <path d="M13 14 H27 M20 14 V28" stroke="#14130F" stroke-width="4" fill="none"/>
+      </svg>
+      <span class="word">TERNA</span>
+    </a>
+    <p class="tag">Curated · Vetted · Local</p>
+    <button type="button" class="linkish" id="reset-demo">// demo build — reset demo data</button>
+  </div>
+</footer>
+
+<div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="false"></div>
+
+<noscript>
+  <div class="wrap" style="padding:3rem 1.5rem;">
+    <p class="note-block">// This portal is a JavaScript prototype. Please enable JavaScript to sign in.</p>
+  </div>
+</noscript>
+
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>
