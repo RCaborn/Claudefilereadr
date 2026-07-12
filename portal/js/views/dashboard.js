@@ -1,7 +1,7 @@
 // Student dashboard — membership, KPIs, engagements, deadlines, pay, applications.
 
-import { getState, select } from "../store.js";
-import { html, toNode, marker, typeTag, money, dateFmt, relDue, briefBadge, appBadge, payBadge, meter, stagePath, emptyState, isOverdue } from "../ui.js";
+import { select, actions } from "../store.js";
+import { html, toNode, marker, typeTag, money, dateFmt, relDue, briefBadge, appBadge, payBadge, meter, stagePath, emptyState, isOverdue, toast } from "../ui.js";
 
 const ACTIVE = ["assigned", "in_delivery", "in_qa"];
 
@@ -93,7 +93,11 @@ export function render(ctx) {
         <td><a href="#/briefs/${a.briefId}">${b ? b.title : a.briefId}</a></td>
         <td>${appBadge(a.status)}</td>
         <td class="num">${dateFmt(a.submittedAt)}</td>
-        <td>${a.status === "declined" && a.declineReason ? html`<span class="cell-sub">${a.declineReason}</span>` : ""}</td>
+        <td>${a.status === "declined" && a.declineReason
+          ? html`<span class="cell-sub">${a.declineReason}</span>`
+          : a.status === "pending"
+            ? html`<button type="button" class="btn btn-outline btn-sm" data-withdraw="${a.id}">Withdraw</button>`
+            : ""}</td>
       </tr>`;
   });
   const applications = apps.length
@@ -138,6 +142,13 @@ export function render(ctx) {
         ${applications}
       </div>
     </div>`);
+
+  root.querySelectorAll("[data-withdraw]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const r = actions.withdrawApplication(btn.getAttribute("data-withdraw"));
+      if (r.ok) toast("Application withdrawn.");
+    });
+  });
 
   return root;
 }

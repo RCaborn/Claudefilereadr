@@ -1,7 +1,7 @@
 // Project workspace (assigned student) — brief, milestones, deliverables + QA.
 
 import { select, actions } from "../store.js";
-import { html, toNode, typeTag, money, dateFmt, relDue, briefBadge, dlvBadge, meter, toast, isOverdue } from "../ui.js";
+import { html, toNode, typeTag, money, dateFmt, relDue, briefBadge, dlvBadge, meter, toast, isOverdue, urlLine } from "../ui.js";
 
 export function render(ctx) {
   const { params, session } = ctx;
@@ -70,7 +70,7 @@ export function render(ctx) {
           <span class="d-title">${d.title} <span class="d-meta">v${d.version}</span></span>
           ${dlvBadge(d.status)}
         </div>
-        ${d.url ? html`<p class="d-meta"><a href="${d.url}" target="_blank" rel="noopener">${d.url}</a></p>` : ""}
+        ${urlLine(d.url)}
         ${d.notes ? html`<p>${d.notes}</p>` : ""}
         ${d.submittedAt ? html`<p class="d-meta">submitted ${dateFmt(d.submittedAt)}</p>` : ""}
         ${qaBlock}
@@ -120,7 +120,7 @@ export function render(ctx) {
       <div class="block" style="margin-top:2.4rem;">
         <div class="block-head"><h3>[1] Brief</h3></div>
         <ul class="dash">${b.scopeItems.map((s) => html`<li>${s}</li>`)}</ul>
-        <p class="fine" style="margin-top:1rem;">Pay ${money(b.studentPay)}${b.payCadence === "monthly" ? " / month" : ""} · Due ${dateFmt(b.dueAt)} · <span style="${isOverdue(b.dueAt) && b.status !== "shipped" ? "color:var(--ink);font-weight:700;" : ""}">${relDue(b.dueAt)}</span></p>
+        <p class="fine" style="margin-top:1rem;">Pay ${money(b.studentPay)}${b.payCadence === "monthly" ? " / month" : ""} · ${b.status === "shipped" ? html`shipped · was due ${dateFmt(b.dueAt)}` : html`Due ${dateFmt(b.dueAt)} · <span style="${isOverdue(b.dueAt) ? "color:var(--ink);font-weight:700;" : ""}">${relDue(b.dueAt)}</span>`}</p>
         <p class="note" style="margin-top:0.4rem;">// supervisor: Studio · weekly check-in Fridays.</p>
       </div>
 

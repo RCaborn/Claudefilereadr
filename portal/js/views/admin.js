@@ -1,7 +1,7 @@
 // Admin overview — KPIs + applications queue + QA queue.
 
 import { getState, select, actions } from "../store.js";
-import { html, toNode, marker, typeTag, dateFmt, emptyState, toast } from "../ui.js";
+import { html, toNode, marker, typeTag, dateFmt, emptyState, toast, decisionCell, wireDecisions } from "../ui.js";
 
 export function render(ctx) {
   const state = getState();
@@ -31,12 +31,7 @@ export function render(ctx) {
           <td><a href="#/admin/briefs/${a.briefId}">${brief ? brief.title : a.briefId}</a><br><span class="cell-sub">${brief ? typeTag(brief.type) : ""}</span></td>
           <td>${a.note}</td>
           <td class="num">${dateFmt(a.submittedAt)}</td>
-          <td>
-            <div class="row-actions">
-              <button type="button" class="btn btn-solid btn-sm" data-accept="${a.id}">Accept</button>
-              <button type="button" class="btn btn-outline btn-sm" data-decline="${a.id}">Decline</button>
-            </div>
-          </td>
+          <td>${decisionCell(a.id)}</td>
         </tr>`;
     });
   const appsQueue = pending.length
@@ -86,20 +81,16 @@ export function render(ctx) {
     </div>`);
 
   // ---- wiring ----
-  root.querySelectorAll("[data-accept]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const r = actions.acceptApplication(btn.getAttribute("data-accept"));
+  wireDecisions(root, {
+    onAccept: (id) => {
+      const r = actions.acceptApplication(id);
       if (r.ok) toast("Brief assigned — other applicants declined.");
       else toast(r.error || "Could not accept.", "✗");
-    });
-  });
-  root.querySelectorAll("[data-decline]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const reason = prompt("Reason for declining (optional — sent to the applicant):", "");
-      if (reason === null) return;  // cancelled
-      const r = actions.declineApplication(btn.getAttribute("data-decline"), reason);
+    },
+    onDecline: (id, reason) => {
+      const r = actions.declineApplication(id, reason);
       if (r.ok) toast("Application declined.");
-    });
+    },
   });
 
   return root;

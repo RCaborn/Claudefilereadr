@@ -3,8 +3,8 @@
 // role nav + current view, and wires global chrome (persona switch, reset demo).
 
 import { getState, subscribe, getSession, getPersona, resetDemo } from "./store.js";
-import { parseHash, matchRoute, homeFor } from "./router.js";
-import { html, toHTML, toNode, logoSvg } from "./ui.js";
+import { parseHash, matchRoute, homeFor, stashPending } from "./router.js";
+import { html, toHTML, toNode, toast } from "./ui.js";
 
 import { render as login } from "./views/login.js";
 import { render as dashboard } from "./views/dashboard.js";
@@ -40,6 +40,8 @@ export function navigate(hash) {
 
 function isActive(navPath, currentPath) {
   if (navPath === "/admin/briefs") return currentPath.startsWith("/admin/briefs");
+  if (navPath === "/marketplace") return currentPath === "/marketplace" || currentPath.startsWith("/briefs/");
+  if (navPath === "/dashboard") return currentPath === "/dashboard" || currentPath.startsWith("/project/");
   return currentPath === navPath;
 }
 
@@ -67,7 +69,11 @@ function renderApp() {
 
   // ---- role-gating / redirects ----
   if (!session) {
-    if (!(match && match.route.view === "login")) { navigate("#/login"); return; }
+    if (!(match && match.route.view === "login")) {
+      if (match) stashPending(location.hash);   // restore this deep link after sign-in
+      navigate("#/login");
+      return;
+    }
   } else if (path !== "/login") {
     if (!match) { navigate(homeFor(session.role)); return; }
     if (match.route.role && match.route.role !== session.role) { navigate(homeFor(session.role)); return; }
@@ -94,12 +100,25 @@ function renderApp() {
 
 // ---- wiring ----
 function boot() {
+  // Two-step reset (no window.confirm — it silently no-ops in sandboxed iframes)
   const resetBtn = document.getElementById("reset-demo");
   if (resetBtn) {
+    const idleLabel = resetBtn.textContent;
+    let armTimer = null;
     resetBtn.addEventListener("click", () => {
-      if (confirm("Reset all demo data back to the seeded state? This clears anything you changed in this browser.")) {
+      if (resetBtn.dataset.armed === "1") {
+        clearTimeout(armTimer);
+        delete resetBtn.dataset.armed;
+        resetBtn.textContent = idleLabel;
         resetDemo();
-        renderApp();
+        toast("Demo data reset to the seeded state.");
+      } else {
+        resetBtn.dataset.armed = "1";
+        resetBtn.textContent = "// sure? click again to reset everything";
+        armTimer = setTimeout(() => {
+          delete resetBtn.dataset.armed;
+          resetBtn.textContent = idleLabel;
+        }, 4000);
       }
     });
   }

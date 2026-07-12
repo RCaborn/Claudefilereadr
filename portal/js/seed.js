@@ -1,11 +1,32 @@
 // Terna Studio Portal — demo seed data.
-// Pure data + version constant. No logic, no store access.
+// Pure data + version constant. No store access.
+// All dates are computed relative to the load date so the demo never rots
+// into "everything overdue" — the relative story stays the same forever.
 // Bump SEED_VERSION whenever the schema or seed content changes so stale
 // localStorage stores auto-reseed on next load.
 
-export const SEED_VERSION = 1;
+export const SEED_VERSION = 2;
 
-export const COHORT = "Cohort 03 · Spring 2026";
+// ISO date `offsetDays` from today (negative = past)
+function d(offsetDays) {
+  const t = new Date();
+  t.setDate(t.getDate() + offsetDays);
+  return t.toISOString().slice(0, 10);
+}
+// month name `offsetDays` from today, for Care Plan labels
+function mn(offsetDays) {
+  const t = new Date();
+  t.setDate(t.getDate() + offsetDays);
+  return t.toLocaleDateString("en-GB", { month: "long" });
+}
+function season() {
+  const now = new Date();
+  const m = now.getMonth();
+  const s = m >= 2 && m <= 4 ? "Spring" : m >= 5 && m <= 7 ? "Summer" : m >= 8 && m <= 10 ? "Autumn" : "Winter";
+  return `${s} ${now.getFullYear()}`;
+}
+
+export const COHORT = `Cohort 03 · ${season()}`;
 
 // Money is stored as integer pence throughout.
 const A_CLIENT = 150000, A_PAY = 65000;   // [A] Sprint — £1,500 client / £650 student
@@ -21,19 +42,19 @@ export function buildSeed() {
       {
         id: "stu-isla", name: "Isla Robertson", short: "Isla R.",
         degree: "MSc Computer Science", cohort: COHORT, stage: "prove",
-        joinedAt: "2026-02-16",
+        joinedAt: d(-146),
         bio: "Automation-minded, two ships behind her. Now proving she can own the client relationship.",
       },
       {
         id: "stu-tom", name: "Tom Okafor", short: "Tom O.",
         degree: "BSc Mathematics", cohort: COHORT, stage: "deliver",
-        joinedAt: "2026-02-16",
+        joinedAt: d(-146),
         bio: "Strong on data plumbing. Mid-delivery on his first Care Plan.",
       },
       {
         id: "stu-freya", name: "Freya MacLeod", short: "Freya M.",
         degree: "MA Economics", cohort: COHORT, stage: "train",
-        joinedAt: "2026-06-29",
+        joinedAt: d(-13),
         bio: "Just through vetting. Trained up and ready for a first brief.",
       },
     ],
@@ -65,7 +86,7 @@ export function buildSeed() {
         ],
         clientPrice: A_CLIENT, studentPay: A_PAY, payCadence: "fixed",
         status: "open", assignedStudentId: null, supervisor: "Studio",
-        postedAt: "2026-07-04", dueAt: "2026-08-08",
+        postedAt: d(-8), dueAt: d(27),
         note: "// client checked — ledger is Xero, no migration needed.",
         milestones: [
           { id: "brf-01-m1", title: "Map the current invoice ledger and payment terms", done: false, doneAt: null },
@@ -86,7 +107,7 @@ export function buildSeed() {
         ],
         clientPrice: B_CLIENT, studentPay: B_PAY, payCadence: "fixed",
         status: "open", assignedStudentId: null, supervisor: "Studio",
-        postedAt: "2026-07-02", dueAt: "2026-08-15",
+        postedAt: d(-10), dueAt: d(34),
         note: "// funded placement — paperwork handled by the studio.",
         milestones: [
           { id: "brf-02-m1", title: "Audit how stock is tracked today", done: false, doneAt: null },
@@ -107,7 +128,7 @@ export function buildSeed() {
         ],
         clientPrice: A_CLIENT, studentPay: A_PAY, payCadence: "fixed",
         status: "open", assignedStudentId: null, supervisor: "Studio",
-        postedAt: "2026-07-01", dueAt: "2026-08-01",
+        postedAt: d(-11), dueAt: d(20),
         note: "// pricing rules confirmed with the owner up front.",
         milestones: [
           { id: "brf-03-m1", title: "Collect the last 20 quotes and line items", done: false, doneAt: null },
@@ -129,12 +150,12 @@ export function buildSeed() {
         ],
         clientPrice: B_CLIENT, studentPay: B_PAY, payCadence: "fixed",
         status: "in_delivery", assignedStudentId: "stu-isla", supervisor: "Studio",
-        postedAt: "2026-06-18", dueAt: "2026-07-28",
+        postedAt: d(-24), dueAt: d(16),
         note: "// weekly check-in: Fridays, studio.",
         milestones: [
-          { id: "brf-04-m1", title: "Pull the booking calendar + guest fields", done: true,  doneAt: "2026-06-27" },
-          { id: "brf-04-m2", title: "Draft the pre-arrival + post-stay message set", done: true,  doneAt: "2026-07-03" },
-          { id: "brf-04-m3", title: "Build the send-on-checkout automation", done: true,  doneAt: "2026-07-10" },
+          { id: "brf-04-m1", title: "Pull the booking calendar + guest fields", done: true,  doneAt: d(-15) },
+          { id: "brf-04-m2", title: "Draft the pre-arrival + post-stay message set", done: true,  doneAt: d(-9) },
+          { id: "brf-04-m3", title: "Build the send-on-checkout automation", done: true,  doneAt: d(-2) },
           { id: "brf-04-m4", title: "Add the review-request step", done: false, doneAt: null },
           { id: "brf-04-m5", title: "Two-week live test with the owner", done: false, doneAt: null },
         ],
@@ -151,13 +172,13 @@ export function buildSeed() {
         ],
         clientPrice: A_CLIENT, studentPay: A_PAY, payCadence: "fixed",
         status: "in_qa", assignedStudentId: "stu-isla", supervisor: "Studio",
-        postedAt: "2026-06-25", dueAt: "2026-07-24",
+        postedAt: d(-17), dueAt: d(12),
         note: "// bank export is CSV — no open-banking needed.",
         milestones: [
-          { id: "brf-05-m1", title: "List every number the owner checks monthly", done: true, doneAt: "2026-06-30" },
-          { id: "brf-05-m2", title: "Pull sales, costs and VAT into one source", done: true, doneAt: "2026-07-04" },
-          { id: "brf-05-m3", title: "Build the one-page monthly report", done: true, doneAt: "2026-07-08" },
-          { id: "brf-05-m4", title: "Automate the month-end send", done: true, doneAt: "2026-07-09" },
+          { id: "brf-05-m1", title: "List every number the owner checks monthly", done: true, doneAt: d(-12) },
+          { id: "brf-05-m2", title: "Pull sales, costs and VAT into one source", done: true, doneAt: d(-8) },
+          { id: "brf-05-m3", title: "Build the one-page monthly report", done: true, doneAt: d(-4) },
+          { id: "brf-05-m4", title: "Automate the month-end send", done: true, doneAt: d(-3) },
         ],
       },
       {
@@ -172,12 +193,12 @@ export function buildSeed() {
         ],
         clientPrice: C_CLIENT, studentPay: C_PAY, payCadence: "monthly",
         status: "in_delivery", assignedStudentId: "stu-tom", supervisor: "Studio",
-        postedAt: "2026-04-18", dueAt: "2026-07-31",
+        postedAt: d(-85), dueAt: d(19),
         note: "// steady-state retainer — this month's improvement is in review.",
         milestones: [
-          { id: "brf-06-m1", title: "May — price-list sync fixed", done: true,  doneAt: "2026-05-28" },
-          { id: "brf-06-m2", title: "June — supplier-order reminder added", done: true,  doneAt: "2026-06-27" },
-          { id: "brf-06-m3", title: "July — margin alert on price changes", done: false, doneAt: null },
+          { id: "brf-06-m1", title: `${mn(-60)} — price-list sync fixed`, done: true,  doneAt: d(-45) },
+          { id: "brf-06-m2", title: `${mn(-30)} — supplier-order reminder added`, done: true,  doneAt: d(-15) },
+          { id: "brf-06-m3", title: `${mn(0)} — margin alert on price changes`, done: false, doneAt: null },
         ],
       },
       {
@@ -192,13 +213,13 @@ export function buildSeed() {
         ],
         clientPrice: A_CLIENT, studentPay: A_PAY, payCadence: "fixed",
         status: "shipped", assignedStudentId: "stu-isla", supervisor: "Studio",
-        postedAt: "2026-05-08", dueAt: "2026-05-30",
+        postedAt: d(-65), dueAt: d(-43),
         note: "// first ship of the cohort. Clean handover.",
         milestones: [
-          { id: "brf-07-m1", title: "De-duplicate and tidy the contact list", done: true, doneAt: "2026-05-16" },
-          { id: "brf-07-m2", title: "Tag contacts by stage and source", done: true, doneAt: "2026-05-21" },
-          { id: "brf-07-m3", title: "Wire tags into the follow-up sequence", done: true, doneAt: "2026-05-27" },
-          { id: "brf-07-m4", title: "Handover + one month of monitoring", done: true, doneAt: "2026-05-30" },
+          { id: "brf-07-m1", title: "De-duplicate and tidy the contact list", done: true, doneAt: d(-57) },
+          { id: "brf-07-m2", title: "Tag contacts by stage and source", done: true, doneAt: d(-52) },
+          { id: "brf-07-m3", title: "Wire tags into the follow-up sequence", done: true, doneAt: d(-46) },
+          { id: "brf-07-m4", title: "Handover + one month of monitoring", done: true, doneAt: d(-43) },
         ],
       },
       {
@@ -213,38 +234,38 @@ export function buildSeed() {
         ],
         clientPrice: B_CLIENT, studentPay: B_PAY, payCadence: "fixed",
         status: "shipped", assignedStudentId: "stu-tom", supervisor: "Studio",
-        postedAt: "2026-05-22", dueAt: "2026-06-20",
+        postedAt: d(-51), dueAt: d(-22),
         note: "// funded placement, converted to a glowing reference.",
         milestones: [
-          { id: "brf-08-m1", title: "Map current delivery rounds and constraints", done: true, doneAt: "2026-05-30" },
-          { id: "brf-08-m2", title: "Build the round-planner from the order list", done: true, doneAt: "2026-06-07" },
-          { id: "brf-08-m3", title: "One-click run sheet with driver notes", done: true, doneAt: "2026-06-14" },
-          { id: "brf-08-m4", title: "Live test over a delivery week", done: true, doneAt: "2026-06-20" },
+          { id: "brf-08-m1", title: "Map current delivery rounds and constraints", done: true, doneAt: d(-43) },
+          { id: "brf-08-m2", title: "Build the round-planner from the order list", done: true, doneAt: d(-35) },
+          { id: "brf-08-m3", title: "One-click run sheet with driver notes", done: true, doneAt: d(-28) },
+          { id: "brf-08-m4", title: "Live test over a delivery week", done: true, doneAt: d(-22) },
         ],
       },
     ],
 
     // ---- applications ----
     applications: [
-      { id: "app-01", briefId: "brf-02", studentId: "stu-freya", note: "Economics background means spreadsheets are home turf — I'd want to know how often stock actually turns over before designing the reorder logic.", status: "pending", submittedAt: "2026-07-06", decidedAt: null, declineReason: null },
-      { id: "app-02", briefId: "brf-03", studentId: "stu-isla", note: "I built the East Sands CRM sequence, so I already know their pricing quirks. One question: are quotes ever discounted off-list?", status: "pending", submittedAt: "2026-07-07", decidedAt: null, declineReason: null },
-      { id: "app-03", briefId: "brf-03", studentId: "stu-tom", note: "Keen to take a Sprint solo.", status: "declined", submittedAt: "2026-07-05", decidedAt: "2026-07-06", declineReason: "Scope needs a Prove-stage member — held for a future brief." },
-      { id: "app-04", briefId: "brf-04", studentId: "stu-isla", note: "Comfortable with calendar-triggered automations.", status: "accepted", submittedAt: "2026-06-20", decidedAt: "2026-06-22", declineReason: null },
-      { id: "app-05", briefId: "brf-05", studentId: "stu-isla", note: "Reporting is my strongest area.", status: "accepted", submittedAt: "2026-06-25", decidedAt: "2026-06-26", declineReason: null },
-      { id: "app-06", briefId: "brf-06", studentId: "stu-tom", note: "Happy to own a recurring relationship.", status: "accepted", submittedAt: "2026-04-20", decidedAt: "2026-04-22", declineReason: null },
-      { id: "app-07", briefId: "brf-07", studentId: "stu-isla", note: "Ready for a first ship.", status: "accepted", submittedAt: "2026-05-10", decidedAt: "2026-05-12", declineReason: null },
-      { id: "app-08", briefId: "brf-08", studentId: "stu-tom", note: "Logistics is a good fit for me.", status: "accepted", submittedAt: "2026-05-25", decidedAt: "2026-05-27", declineReason: null },
+      { id: "app-01", briefId: "brf-02", studentId: "stu-freya", note: "Economics background means spreadsheets are home turf — I'd want to know how often stock actually turns over before designing the reorder logic.", status: "pending", submittedAt: d(-6), decidedAt: null, declineReason: null },
+      { id: "app-02", briefId: "brf-03", studentId: "stu-isla", note: "I built the East Sands CRM sequence, so I already know their pricing quirks. One question: are quotes ever discounted off-list?", status: "pending", submittedAt: d(-5), decidedAt: null, declineReason: null },
+      { id: "app-03", briefId: "brf-03", studentId: "stu-tom", note: "Keen to take a Sprint solo.", status: "declined", submittedAt: d(-7), decidedAt: d(-6), declineReason: "Scope needs a Prove-stage member — held for a future brief." },
+      { id: "app-04", briefId: "brf-04", studentId: "stu-isla", note: "Comfortable with calendar-triggered automations.", status: "accepted", submittedAt: d(-22), decidedAt: d(-20), declineReason: null },
+      { id: "app-05", briefId: "brf-05", studentId: "stu-isla", note: "Reporting is my strongest area.", status: "accepted", submittedAt: d(-17), decidedAt: d(-16), declineReason: null },
+      { id: "app-06", briefId: "brf-06", studentId: "stu-tom", note: "Happy to own a recurring relationship.", status: "accepted", submittedAt: d(-83), decidedAt: d(-81), declineReason: null },
+      { id: "app-07", briefId: "brf-07", studentId: "stu-isla", note: "Ready for a first ship.", status: "accepted", submittedAt: d(-63), decidedAt: d(-61), declineReason: null },
+      { id: "app-08", briefId: "brf-08", studentId: "stu-tom", note: "Logistics is a good fit for me.", status: "accepted", submittedAt: d(-48), decidedAt: d(-46), declineReason: null },
     ],
 
     // ---- deliverables ----
     deliverables: [
       {
         id: "dlv-01", briefId: "brf-06", studentId: "stu-tom",
-        title: "July improvement — margin alert on price changes",
+        title: `${mn(0)} improvement — margin alert on price changes`,
         url: "https://example.com/bakehouse/margin-alert",
         notes: "Sheet + Apps Script trigger. Fires an alert whenever a product's cost is edited.",
-        version: 1, status: "qa_fail", submittedAt: "2026-07-08",
-        qa: { verdict: "fail", note: "Alert fires on every price edit, not just increases — add a threshold (say >2%) and only fire when the margin actually drops, then resubmit.", reviewedBy: "Studio", reviewedAt: "2026-07-10" },
+        version: 1, status: "qa_fail", submittedAt: d(-4),
+        qa: { verdict: "fail", note: "Alert fires on every price edit, not just increases — add a threshold (say >2%) and only fire when the margin actually drops, then resubmit.", reviewedBy: "Studio", reviewedAt: d(-2) },
         history: [],
       },
       {
@@ -252,7 +273,7 @@ export function buildSeed() {
         title: "One-page monthly report + auto-send",
         url: "https://example.com/anstruther/monthly-report",
         notes: "Pulls from the sales sheet and the bank CSV export. Sends 09:00 on the 1st.",
-        version: 1, status: "submitted", submittedAt: "2026-07-09",
+        version: 1, status: "submitted", submittedAt: d(-3),
         qa: null, history: [],
       },
       {
@@ -260,8 +281,8 @@ export function buildSeed() {
         title: "CRM tidy + follow-up wiring",
         url: "https://example.com/eastsands/crm",
         notes: "Contacts de-duped, tagged by stage, wired to the follow-up sequence.",
-        version: 1, status: "qa_pass", submittedAt: "2026-05-28",
-        qa: { verdict: "pass", note: "Clean handover, monitoring in place. Client confirmed follow-ups firing correctly.", reviewedBy: "Studio", reviewedAt: "2026-05-30" },
+        version: 1, status: "qa_pass", submittedAt: d(-45),
+        qa: { verdict: "pass", note: "Clean handover, monitoring in place. Client confirmed follow-ups firing correctly.", reviewedBy: "Studio", reviewedAt: d(-43) },
         history: [],
       },
       {
@@ -269,8 +290,8 @@ export function buildSeed() {
         title: "Round planner + run sheets",
         url: "https://example.com/anstruther/delivery-runs",
         notes: "Planner builds rounds from the order list; one-click run sheet per driver.",
-        version: 1, status: "qa_pass", submittedAt: "2026-06-18",
-        qa: { verdict: "pass", note: "Tested over a full week. Driver time down, no missed drops.", reviewedBy: "Studio", reviewedAt: "2026-06-20" },
+        version: 1, status: "qa_pass", submittedAt: d(-24),
+        qa: { verdict: "pass", note: "Tested over a full week. Driver time down, no missed drops.", reviewedBy: "Studio", reviewedAt: d(-22) },
         history: [],
       },
     ],
@@ -288,7 +309,7 @@ export function buildSeed() {
           "Wire tags into the follow-up sequence",
           "Handover and one month of monitoring",
         ],
-        shippedAt: "2026-05-30", verifiedBy: "Terna Studio QA",
+        shippedAt: d(-43), verifiedBy: "Terna Studio QA",
       },
       {
         id: "pf-02", studentId: "stu-tom", briefId: "brf-08", deliverableId: "dlv-04",
@@ -301,19 +322,19 @@ export function buildSeed() {
           "One-click run sheet with driver notes",
           "Live test over a delivery week",
         ],
-        shippedAt: "2026-06-20", verifiedBy: "Terna Studio QA",
+        shippedAt: d(-22), verifiedBy: "Terna Studio QA",
       },
     ],
 
     // ---- payments (integer pence) ----
     payments: [
-      { id: "pay-01", studentId: "stu-isla", briefId: "brf-07", label: "Sprint — East Sands Lettings", amount: A_PAY, status: "paid", dueAt: "2026-05-30", paidAt: "2026-05-31" },
-      { id: "pay-02", studentId: "stu-isla", briefId: "brf-05", label: "Sprint — Anstruther Shellfish Co.", amount: A_PAY, status: "due", dueAt: "2026-07-24", paidAt: null },
-      { id: "pay-03", studentId: "stu-isla", briefId: "brf-04", label: "Project — Links View Guest House", amount: B_PAY, status: "due", dueAt: "2026-07-28", paidAt: null },
-      { id: "pay-04", studentId: "stu-tom", briefId: "brf-08", label: "Project — Anstruther Shellfish Co.", amount: B_PAY, status: "paid", dueAt: "2026-06-20", paidAt: "2026-06-21" },
-      { id: "pay-05", studentId: "stu-tom", briefId: "brf-06", label: "Care Plan — Kinnessburn (May)", amount: C_PAY, status: "paid", dueAt: "2026-05-31", paidAt: "2026-05-31" },
-      { id: "pay-06", studentId: "stu-tom", briefId: "brf-06", label: "Care Plan — Kinnessburn (June)", amount: C_PAY, status: "paid", dueAt: "2026-06-30", paidAt: "2026-06-30" },
-      { id: "pay-07", studentId: "stu-tom", briefId: "brf-06", label: "Care Plan — Kinnessburn (July)", amount: C_PAY, status: "due", dueAt: "2026-07-31", paidAt: null },
+      { id: "pay-01", studentId: "stu-isla", briefId: "brf-07", label: "Sprint — East Sands Lettings", amount: A_PAY, status: "paid", dueAt: d(-43), paidAt: d(-42) },
+      { id: "pay-02", studentId: "stu-isla", briefId: "brf-05", label: "Sprint — Anstruther Shellfish Co.", amount: A_PAY, status: "due", dueAt: d(12), paidAt: null },
+      { id: "pay-03", studentId: "stu-isla", briefId: "brf-04", label: "Project — Links View Guest House", amount: B_PAY, status: "due", dueAt: d(16), paidAt: null },
+      { id: "pay-04", studentId: "stu-tom", briefId: "brf-08", label: "Project — Anstruther Shellfish Co.", amount: B_PAY, status: "paid", dueAt: d(-22), paidAt: d(-21) },
+      { id: "pay-05", studentId: "stu-tom", briefId: "brf-06", label: `Care Plan — Kinnessburn (${mn(-60)})`, amount: C_PAY, status: "paid", dueAt: d(-42), paidAt: d(-42) },
+      { id: "pay-06", studentId: "stu-tom", briefId: "brf-06", label: `Care Plan — Kinnessburn (${mn(-30)})`, amount: C_PAY, status: "paid", dueAt: d(-12), paidAt: d(-12) },
+      { id: "pay-07", studentId: "stu-tom", briefId: "brf-06", label: `Care Plan — Kinnessburn (${mn(0)})`, amount: C_PAY, status: "due", dueAt: d(19), paidAt: null },
     ],
 
     // running counter base for id generation (store bumps this)

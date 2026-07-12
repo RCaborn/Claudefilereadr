@@ -2,7 +2,7 @@
 
 import { getPersonas, setSession } from "../store.js";
 import { html, toNode, logoSvg, stagePath } from "../ui.js";
-import { homeFor } from "../router.js";
+import { homeFor, matchRoute, takePending } from "../router.js";
 
 export function render(ctx) {
   const personas = getPersonas();
@@ -46,7 +46,16 @@ export function render(ctx) {
   root.querySelectorAll("[data-persona]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const session = setSession(btn.getAttribute("data-persona"));
-      if (session) ctx.navigate(homeFor(session.role));
+      if (!session) return;
+      // resume a stashed deep link if this persona's role is allowed there
+      const pending = takePending();
+      if (pending) {
+        let path = pending.startsWith("#") ? pending.slice(1) : pending;
+        if (!path.startsWith("/")) path = "/" + path;
+        const m = matchRoute(path);
+        if (m && (!m.route.role || m.route.role === session.role)) { ctx.navigate(pending); return; }
+      }
+      ctx.navigate(homeFor(session.role));
     });
   });
 

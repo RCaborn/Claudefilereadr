@@ -1,7 +1,7 @@
 // Brief detail + apply flow (student).
 
 import { select, actions } from "../store.js";
-import { html, toNode, marker, typeTag, money, dateFmt, relDue, appBadge, badge, toast, isOverdue } from "../ui.js";
+import { html, toNode, marker, typeName, money, dateFmt, relDue, appBadge, toast, isOverdue } from "../ui.js";
 
 export function render(ctx) {
   const { params, session } = ctx;
@@ -24,6 +24,8 @@ export function render(ctx) {
         ${app.status === "declined" && app.declineReason
           ? html`<div class="callout"><span class="c-label">[ Studio note ]</span><p>${app.declineReason}</p></div>` : ""}
         ${app.note ? html`<p class="note-block">// your note: ${app.note}</p>` : ""}
+        ${app.status === "pending"
+          ? html`<div><button type="button" class="btn btn-outline btn-sm" id="withdraw-app">Withdraw application</button></div>` : ""}
       </div>`;
   } else if (b.status === "open") {
     applyPanel = html`
@@ -85,9 +87,13 @@ export function render(ctx) {
     });
   }
 
-  return root;
-}
+  const withdrawBtn = root.querySelector("#withdraw-app");
+  if (withdrawBtn && app) {
+    withdrawBtn.addEventListener("click", () => {
+      const r = actions.withdrawApplication(app.id);
+      if (r.ok) toast("Application withdrawn.");
+    });
+  }
 
-function typeName(type) {
-  return type === "A" ? "The Sprint" : type === "B" ? "The Project" : "The Care Plan";
+  return root;
 }

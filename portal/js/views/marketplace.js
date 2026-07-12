@@ -1,16 +1,27 @@
 // Marketplace — students browse open briefs and see their application state.
 
 import { getState, select } from "../store.js";
-import { html, toNode, marker, typeTag, money, dateFmt, relDue, appBadge, emptyState } from "../ui.js";
+import { html, toNode, marker, typeTag, money, appBadge, emptyState } from "../ui.js";
+
+// Filter survives navigation via sessionStorage where available; the module
+// variable keeps it working where storage access throws (sandboxed iframes).
+let memFilter = "ALL";
+function getFilter() {
+  try { return sessionStorage.getItem("terna.mkt.filter") || memFilter; } catch (e) { return memFilter; }
+}
+function setFilter(v) {
+  memFilter = v;
+  try { sessionStorage.setItem("terna.mkt.filter", v); } catch (e) {}
+}
 
 export function render(ctx) {
   const { session } = ctx;
   const studentId = session.personaId;
   const state = getState();
 
-  const filter = (sessionStorage.getItem("terna.mkt.filter") || "ALL");
+  const filter = getFilter();
 
-  // students see open briefs, plus any brief they've applied to (to keep context)
+  // students browse open briefs; their past applications live on the dashboard
   const openBriefs = state.briefs.filter((b) => b.status === "open");
   const visible = filter === "ALL" ? openBriefs : openBriefs.filter((b) => b.type === filter);
 
@@ -35,7 +46,7 @@ export function render(ctx) {
   });
 
   const filters = ["ALL", "A", "B", "C"].map((f) => html`
-    <button type="button" class="toggle${f === filter ? " on" : ""}" data-filter="${f}">${f === "ALL" ? "All" : `[${f}]`}</button>
+    <button type="button" class="toggle${f === filter ? " on" : ""}" data-filter="${f}" aria-pressed="${f === filter ? "true" : "false"}">${f === "ALL" ? "All" : `[${f}]`}</button>
   `);
 
   const body = visible.length
@@ -55,7 +66,7 @@ export function render(ctx) {
 
   root.querySelectorAll("[data-filter]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      sessionStorage.setItem("terna.mkt.filter", btn.getAttribute("data-filter"));
+      setFilter(btn.getAttribute("data-filter"));
       ctx.navigate("#/marketplace");   // same-route → force re-render
     });
   });

@@ -43,3 +43,9 @@ export function matchRoute(path) {
 export function homeFor(role) {
   return role === "admin" ? "#/admin" : "#/dashboard";
 }
+
+// Deep-link preservation across the login redirect. Module state (not
+// storage) so it works even where storage access throws.
+let pendingHash = null;
+export function stashPending(hash) { pendingHash = hash; }
+export function takePending() { const h = pendingHash; pendingHash = null; return h; }

@@ -144,6 +144,60 @@ export function emptyState(msg, onDark = false) {
   return html`<div class="empty${raw(onDark ? " dark" : "")}">${msg}</div>`;
 }
 
+// ---------- URL safety ----------
+// Only http(s) links are rendered as anchors; anything else (javascript:,
+// data:, …) is shown as plain text so a pasted "link" can never execute.
+export function safeUrl(url) {
+  const s = String(url || "").trim();
+  return /^https?:\/\//i.test(s) ? s : null;
+}
+
+export function urlLine(url) {
+  if (!url) return "";
+  const safe = safeUrl(url);
+  return safe
+    ? html`<p class="d-meta"><a href="${safe}" target="_blank" rel="noopener">${url}</a></p>`
+    : html`<p class="d-meta">${url} <span class="muted">— link disabled (not http/https)</span></p>`;
+}
+
+// ---------- application decision controls (shared by admin views) ----------
+// Inline decline flow instead of window.prompt — prompt() silently no-ops in
+// sandboxed iframes, which is where this portal may end up embedded.
+export function decisionCell(appId) {
+  return html`
+    <div class="row-actions">
+      <button type="button" class="btn btn-solid btn-sm" data-accept="${appId}">Accept</button>
+      <button type="button" class="btn btn-outline btn-sm" data-decline-toggle="${appId}">Decline</button>
+    </div>
+    <form class="form" data-decline-form="${appId}" hidden style="margin-top:0.7rem;gap:0.5rem;max-width:100%;min-width:13rem;">
+      <input type="text" name="reason" placeholder="// reason (optional — sent to the applicant)">
+      <div class="row" style="gap:0.5rem;">
+        <button type="submit" class="btn btn-solid btn-sm">Confirm decline</button>
+        <button type="button" class="btn btn-outline btn-sm" data-decline-cancel="${appId}">Cancel</button>
+      </div>
+    </form>`;
+}
+
+export function wireDecisions(root, { onAccept, onDecline }) {
+  root.querySelectorAll("[data-accept]").forEach((btn) =>
+    btn.addEventListener("click", () => onAccept(btn.getAttribute("data-accept"))));
+  root.querySelectorAll("[data-decline-toggle]").forEach((btn) =>
+    btn.addEventListener("click", () => {
+      const form = root.querySelector(`[data-decline-form="${btn.getAttribute("data-decline-toggle")}"]`);
+      if (form) { form.hidden = !form.hidden; if (!form.hidden) form.elements.reason.focus(); }
+    }));
+  root.querySelectorAll("[data-decline-cancel]").forEach((btn) =>
+    btn.addEventListener("click", () => {
+      const form = root.querySelector(`[data-decline-form="${btn.getAttribute("data-decline-cancel")}"]`);
+      if (form) form.hidden = true;
+    }));
+  root.querySelectorAll("[data-decline-form]").forEach((form) =>
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      onDecline(form.getAttribute("data-decline-form"), form.elements.reason.value);
+    }));
+}
+
 // ---------- toast ----------
 export function toast(msg, mark = "✓") {
   const host = document.getElementById("toast-host");

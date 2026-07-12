@@ -1,7 +1,7 @@
 // Admin brief workbench — post/edit a brief, decide applications, record QA verdicts.
 
 import { getState, select, actions } from "../store.js";
-import { html, toNode, marker, typeTag, typeName, money, dateFmt, relDue, briefBadge, appBadge, dlvBadge, emptyState, toast } from "../ui.js";
+import { html, raw, toNode, marker, typeTag, typeName, money, dateFmt, relDue, briefBadge, appBadge, dlvBadge, emptyState, toast, decisionCell, wireDecisions, urlLine } from "../ui.js";
 
 const PAY_DEFAULT = { A: 650, B: 1760, C: 120 };
 
@@ -19,8 +19,10 @@ function renderForm(ctx, brief) {
   const isNew = !brief;
   const type0 = brief ? brief.type : "A";
   const clientOptions = state.clients.map((c) => html`<option value="${c.id}"${brief && brief.clientId === c.id ? " selected" : ""}>${c.name} · ${c.town}</option>`);
+  const typeLocked = !!brief && brief.status !== "open";   // type locks once assigned
   const typeToggles = ["A", "B", "C"].map((t) => html`
-    <button type="button" class="toggle${t === type0 ? " on" : ""}" data-type="${t}">[${t}] ${typeName(t)}</button>`);
+    <button type="button" class="toggle${t === type0 ? " on" : ""}" data-type="${t}"
+      aria-pressed="${t === type0 ? "true" : "false"}" ${typeLocked ? raw("disabled") : ""}>[${t}] ${typeName(t)}</button>`);
 
   const root = toNode(html`
     <div class="wrap view-lead">
@@ -66,7 +68,7 @@ function renderForm(ctx, brief) {
         <div class="field-inline">
           <div class="field">
             <label for="bf-pay">Student pay (£)</label>
-            <input type="number" id="bf-pay" name="pay" min="0" step="10" value="${brief ? brief.studentPay / 100 : PAY_DEFAULT[type0]}">
+            <input type="number" id="bf-pay" name="pay" min="1" step="1" required value="${brief ? brief.studentPay / 100 : PAY_DEFAULT[type0]}">
           </div>
           <div class="field">
             <label for="bf-note">Studio note</label>
@@ -87,7 +89,10 @@ function renderForm(ctx, brief) {
     btn.addEventListener("click", () => {
       const t = btn.getAttribute("data-type");
       typeInput.value = t;
-      root.querySelectorAll("[data-type]").forEach((b) => b.classList.toggle("on", b === btn));
+      root.querySelectorAll("[data-type]").forEach((b) => {
+        b.classList.toggle("on", b === btn);
+        b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+      });
       if (isNew) payInput.value = PAY_DEFAULT[t];
     });
   });
@@ -95,6 +100,9 @@ function renderForm(ctx, brief) {
   root.querySelector("#brief-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const f = e.target.elements;
+    // blank/zero pay falls back: type default when posting, current pay when editing
+    let pay = Math.round(Number(f.pay.value) * 100);
+    if (!Number.isFinite(pay) || pay <= 0) pay = isNew ? PAY_DEFAULT[f.type.value] * 100 : brief.studentPay;
     const payload = {
       type: f.type.value,
       title: f.title.value,
@@ -102,7 +110,7 @@ function renderForm(ctx, brief) {
       summary: f.summary.value,
       scopeText: f.scopeText.value,
       milestonesText: f.milestonesText.value,
-      studentPay: Math.round(Number(f.pay.value) * 100) || 0,
+      studentPay: pay,
       dueAt: f.dueAt.value,
       note: f.note.value,
     };
@@ -132,10 +140,7 @@ function renderWorkbench(ctx, brief) {
     .map((a) => {
       const student = select.student(a.studentId);
       const actionsCell = a.status === "pending"
-        ? html`<div class="row-actions">
-            <button type="button" class="btn btn-solid btn-sm" data-accept="${a.id}">Accept</button>
-            <button type="button" class="btn btn-outline btn-sm" data-decline="${a.id}">Decline</button>
-          </div>`
+        ? decisionCell(a.id)
         : html`${appBadge(a.status)}${a.status === "declined" && a.declineReason ? html`<br><span class="cell-sub">${a.declineReason}</span>` : ""}`;
       return html`
         <tr>
@@ -161,8 +166,8 @@ function renderWorkbench(ctx, brief) {
           <div class="field">
             <span class="field-label">Verdict</span>
             <div class="toggle-group">
-              <button type="button" class="toggle" data-verdict="pass">[✓] Pass</button>
-              <button type="button" class="toggle" data-verdict="fail">[✗] Fail</button>
+              <button type="button" class="toggle" data-verdict="pass" aria-pressed="false">[✓] Pass</button>
+              <button type="button" class="toggle" data-verdict="fail" aria-pressed="false">[✗] Fail</button>
             </div>
             <input type="hidden" name="verdict" value="">
           </div>
@@ -187,7 +192,7 @@ function renderWorkbench(ctx, brief) {
           <span class="d-title">${d.title} <span class="d-meta">v${d.version} · ${student ? student.name : ""}</span></span>
           ${dlvBadge(d.status)}
         </div>
-        ${d.url ? html`<p class="d-meta"><a href="${d.url}" target="_blank" rel="noopener">${d.url}</a></p>` : ""}
+        ${urlLine(d.url)}
         ${d.notes ? html`<p>${d.notes}</p>` : ""}
         ${histNote}
         ${qaZone}
@@ -207,7 +212,7 @@ function renderWorkbench(ctx, brief) {
       <h1 style="margin-top:0.6rem;">${brief.title}</h1>
       <p class="sub-line">${client ? client.name : ""} · ${client ? client.town : ""}</p>
       <p style="margin-top:1rem;max-width:44rem;">${brief.summary}</p>
-      <p class="fine" style="margin-top:0.8rem;">${money(brief.studentPay)}${brief.payCadence === "monthly" ? " / month" : ""} · Due ${dateFmt(brief.dueAt)} · ${relDue(brief.dueAt)} · ${assignee ? html`assigned to ${assignee.name}` : "unassigned"}</p>
+      <p class="fine" style="margin-top:0.8rem;">${money(brief.studentPay)}${brief.payCadence === "monthly" ? " / month" : ""} · ${brief.status === "shipped" ? html`shipped · was due ${dateFmt(brief.dueAt)}` : html`Due ${dateFmt(brief.dueAt)} · ${relDue(brief.dueAt)}`} · ${assignee ? html`assigned to ${assignee.name}` : "unassigned"}</p>
 
       <div class="block" style="margin-top:2.4rem;">
         <div class="block-head"><h2>Applications</h2></div>
@@ -229,20 +234,16 @@ function renderWorkbench(ctx, brief) {
     </div>`);
 
   // ---- wiring ----
-  root.querySelectorAll("[data-accept]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const r = actions.acceptApplication(btn.getAttribute("data-accept"));
+  wireDecisions(root, {
+    onAccept: (id) => {
+      const r = actions.acceptApplication(id);
       if (r.ok) toast("Brief assigned — other applicants declined.");
       else toast(r.error || "Could not accept.", "✗");
-    });
-  });
-  root.querySelectorAll("[data-decline]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const reason = prompt("Reason for declining (optional — sent to the applicant):", "");
-      if (reason === null) return;
-      const r = actions.declineApplication(btn.getAttribute("data-decline"), reason);
+    },
+    onDecline: (id, reason) => {
+      const r = actions.declineApplication(id, reason);
       if (r.ok) toast("Application declined.");
-    });
+    },
   });
 
   root.querySelectorAll("form.qa-form").forEach((form) => {
@@ -250,7 +251,10 @@ function renderWorkbench(ctx, brief) {
     form.querySelectorAll("[data-verdict]").forEach((btn) => {
       btn.addEventListener("click", () => {
         verdictInput.value = btn.getAttribute("data-verdict");
-        form.querySelectorAll("[data-verdict]").forEach((b) => b.classList.toggle("on", b === btn));
+        form.querySelectorAll("[data-verdict]").forEach((b) => {
+          b.classList.toggle("on", b === btn);
+          b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+        });
       });
     });
     form.addEventListener("submit", (e) => {
